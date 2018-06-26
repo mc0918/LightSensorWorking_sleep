@@ -1,5 +1,5 @@
 /* This is a program for a light sensor that sleeps until a light intesity over an arbitray threshold is detected by the sensor.
- *  The sensor records the timestamp, the lux value, and writes them to an SD card.
+ *  The sensor records the timestamp, the lux value, and logs them on an SD card.
  *  When there is no light the sensor sleeps.
  */
 
@@ -9,7 +9,7 @@
 #include <SD.h>                 // I much prefer SdFat.h by Greiman over the old SD.h library used here
 #include  <SPI.h>
 const int chipSelect = 10;      //CS moved to pin 10 on the arduino
-#include "LowPower.h"           
+#include "LowPower.h"
 #include <RTClib.h>
 
 RTC_DS3231 RTC;
@@ -27,7 +27,7 @@ const char header[] PROGMEM = "Timestamp, Lux"; //gets written to second line da
 //indicator LED pins - change to suit your connections
 int RED_PIN = 7;
 int GREEN_PIN = 6;
-int BLUE_PIN = 5; 
+int BLUE_PIN = 5;
 //============================================================================================================================
 //Below taken from Adafruit TSL2561 example code
 
@@ -48,7 +48,7 @@ int BLUE_PIN = 5;
 //MUST add false tag or else sensor will default to sleep mode between readings
 //Interrupts won't work without false being declared
 
-Adafruit_TSL2561_Unified tsl = Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 12345, false); 
+Adafruit_TSL2561_Unified tsl = Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 12345, false);
 
 // We assume the Adafruit TSL2561's "int" pin is attached to this digital pin
 #define INTERRUPT_PIN 3
@@ -93,7 +93,7 @@ void configureSensor(void)
   //Serial.println("threshold: "); Serial.println(threshold);
   tsl.setInterruptThreshold(0,10); //High value is channel 0 data
 
-  /* 
+  /*
         Maximum value is 15; put to 1 for immediate triggering; put to 0 to have
         the interrupt triggered after every integration time (regardless of whether
         the thresholds were exceeded or not)
@@ -140,7 +140,7 @@ void setup(void)
 //========================================================================================
 //                            SD Card Setup
 //----------------------------------------------------------------------------------------
-// Setting the SPI pins high helps some sd cards go into sleep mode 
+// Setting the SPI pins high helps some sd cards go into sleep mode
 // the following pullup resistors only needs to be enabled for the ProMini builds - not the UNO loggers
 pinMode(chipSelect, OUTPUT); digitalWrite(chipSelect, HIGH); //ALWAYS pullup the ChipSelect pin with the SD library
 //and you may need to pullup MOSI/MISO
@@ -181,13 +181,13 @@ pinMode(GREEN_PIN, OUTPUT);
 pinMode(BLUE_PIN, OUTPUT);
 digitalWrite(RED_PIN, LOW);
 digitalWrite(GREEN_PIN, HIGH); // startup with green led lit
-digitalWrite(BLUE_PIN, LOW);  
+digitalWrite(BLUE_PIN, LOW);
 }
 
 //============================ACTIVATES SLEEP======================================================
 void enterSleep() {
   delay(500);            //Without the delay the Arduino will sleep before intitializing SD Card
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), lightInterrupt, LOW); 
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), lightInterrupt, LOW);
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);     //AVR sleep library, most power-saving option
   sleep_enable();
   sleep_mode();
@@ -199,18 +199,18 @@ void enterSleep() {
 //=====================MAIN LOOP====================================================================
 void loop(void)
 {
-String dataString = "";                  //Creates empty string named dataString 
+String dataString = "";                  //Creates empty string named dataString
 enterSleep();                            //Code starts after wherever this is places
   /* Interrupt triggered? */
-  if(digitalRead(INTERRUPT_PIN) == LOW) {  //Could possibly be replaced with lightInterrupt == true, Schroedinger's interrupt right now 
+  if(digitalRead(INTERRUPT_PIN) == LOW) {  //Could possibly be replaced with lightInterrupt == true, Schroedinger's interrupt right now
     // We have an interrupt!
     Serial.println("TSL2561 reported interrupt thresholds exceeded!");
-    
+
 //------------------------------------------------------------------------------------------------------------------------
     DateTime now = RTC.now(); //this reads the time from the RTC
     sprintf(CycleTimeStamp, "%04d/%02d/%02d %02d:%02d", now.year(), now.month(), now.day(), now.hour(), now.minute());
     //loads the time into a string variable
-    
+
 //-------------------------------------------------------------------------------------------------------------------------
 //polls(?) sensor and if light is above threshold specified prints it to serial monitor
     sensors_event_t event;
@@ -244,7 +244,7 @@ enterSleep();                            //Code starts after wherever this is pl
 //-------------------------------------------------------------------------------------------------------------------------
     // Clear interrupt on sensor
     tsl.clearLevelInterrupt();
-  } //End of interrupt 
+  } //End of interrupt
 } //end of main loop
 
 //============================LIGHT ISR============================================================
@@ -252,4 +252,3 @@ enterSleep();                            //Code starts after wherever this is pl
 void lightInterrupt() {
   digitalRead(INTERRUPT_PIN) == LOW;
 }
-
